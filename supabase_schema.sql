@@ -324,3 +324,37 @@ EXCEPTION WHEN duplicate_object THEN null; END $$;
 DO $$ BEGIN
     ALTER TABLE "CouponUsage" ADD CONSTRAINT "CouponUsage_couponId_fkey" FOREIGN KEY ("couponId") REFERENCES "Coupon"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+-- ==========================================
+-- SEED INITIAL DATA (ADMIN, CATEGORIES, PRODUCTS)
+-- ==========================================
+
+-- Seed Initial Admin User (admin / admin1234)
+INSERT INTO "User" ("username", "name", "email", "password", "role", "balance", "points", "updatedAt")
+VALUES ('admin', 'Admin Master', 'admin@webshop.local', '$2b$10$r24gY0PM3i4hv5aOnRPGE.Q64/UTKjSfIJku5dlpsTt.ZIg/eR7Oy', 'ADMIN', 99999, 1000, NOW())
+ON CONFLICT ("username") DO UPDATE SET "role" = 'ADMIN', "password" = '$2b$10$r24gY0PM3i4hv5aOnRPGE.Q64/UTKjSfIJku5dlpsTt.ZIg/eR7Oy', "balance" = 99999;
+
+-- Seed Initial Categories
+INSERT INTO "Category" ("id", "name", "icon", "order", "updatedAt")
+VALUES 
+  ('cat-premium-account', 'บัญชีดิจิทัลพรีเมียม', 'Sparkles', 1, NOW()),
+  ('cat-software', 'ซอฟต์แวร์และโปรแกรม', 'Package', 2, NOW()),
+  ('cat-gaming', 'เติมเกมและไอเทม', 'Flame', 3, NOW())
+ON CONFLICT ("id") DO NOTHING;
+
+-- Seed Sample Products
+INSERT INTO "Product" ("id", "name", "description", "price", "discount", "image", "isHot", "badge", "isActive", "categoryId", "updatedAt")
+VALUES
+  ('prod-netflix', 'Netflix Premium 4K Ultra HD (30 วัน)', 'รับชมภาพยนตร์และซีรีส์ความคมชัดสูงสุด 4K UHD ลื่นไหล ไม่กระตุก พร้อมรับประกันตลอดการใช้งาน 30 วัน', 149, 199, 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=600&auto=format&fit=crop', true, 'HOT SELLER', true, 'cat-premium-account', NOW()),
+  ('prod-youtube', 'YouTube Premium (30 วัน)', 'ฟังเพลงและดูวิดีโอแบบไม่มีโฆษณาคั่น เล่นเบื้องหลังได้ ฟัง YouTube Music Premium ได้ไม่จำกัด', 49, 79, 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=600&auto=format&fit=crop', true, 'POPULAR', true, 'cat-premium-account', NOW()),
+  ('prod-canva', 'Canva Pro Education (ใช้งานได้ 1 ปี)', 'ปลดล็อกฟีเจอร์พรีเมียมทั้งหมด เทมเพลต รูปภาพ องค์ประกอบ กราฟิก และ AI Magic Studio ไม่จำกัด', 99, 150, 'https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=600&auto=format&fit=crop', false, 'BEST VALUE', true, 'cat-software', NOW())
+ON CONFLICT ("id") DO NOTHING;
+
+-- Seed Sample Stock Items
+INSERT INTO "ProductStock" ("id", "productId", "accountEmail", "accountPass", "accountData", "status", "updatedAt")
+VALUES
+  ('stock-nf-1', 'prod-netflix', 'vip.user1@netflixvip.com', 'Pass12345!', 'Screen 1 PIN 1234 (ห้ามเปลี่ยนรหัส)', 'AVAILABLE', NOW()),
+  ('stock-nf-2', 'prod-netflix', 'vip.user2@netflixvip.com', 'Pass67890!', 'Screen 2 PIN 5678 (ห้ามเปลี่ยนรหัส)', 'AVAILABLE', NOW()),
+  ('stock-yt-1', 'prod-youtube', 'yt.premium1@gmail.com', 'YtPass2026!', 'ส่งคำเชิญเข้าครอบครัว (Family Member)', 'AVAILABLE', NOW())
+ON CONFLICT ("id") DO NOTHING;
+
