@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
-const SUPABASE_DB_URL = "postgres://postgres.qyqqzuzoworkectsuwan:Az14012550%23123@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres";
+const SUPABASE_DB_URL = "postgres://postgres:Az14012550%23123@db.qyqqzuzoworkectsuwan.supabase.co:5432/postgres";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
