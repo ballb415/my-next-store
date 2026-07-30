@@ -2,22 +2,41 @@
 CREATE SCHEMA IF NOT EXISTS "public";
 
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN');
+DO $$ BEGIN
+    CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
--- CreateEnum
-CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'SUCCESS', 'FAILED', 'REFUNDED');
+DO $$ BEGIN
+    CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'SUCCESS', 'FAILED', 'REFUNDED');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
--- CreateEnum
-CREATE TYPE "TopupStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
+DO $$ BEGIN
+    CREATE TYPE "TopupStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
--- CreateEnum
-CREATE TYPE "CouponType" AS ENUM ('PERCENT', 'FIXED');
+DO $$ BEGIN
+    CREATE TYPE "CouponType" AS ENUM ('PERCENT', 'FIXED');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
--- CreateEnum
-CREATE TYPE "StockStatus" AS ENUM ('AVAILABLE', 'SOLD', 'RESERVED');
+DO $$ BEGIN
+    CREATE TYPE "StockStatus" AS ENUM ('AVAILABLE', 'SOLD', 'RESERVED');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
--- CreateEnum
-CREATE TYPE "StoreStatus" AS ENUM ('ACTIVE', 'EXPIRED', 'SUSPENDED');
+DO $$ BEGIN
+    CREATE TYPE "StoreStatus" AS ENUM ('ACTIVE', 'EXPIRED', 'SUSPENDED');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- CreateTable
 CREATE TABLE "User" (
