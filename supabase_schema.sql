@@ -331,8 +331,8 @@ EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- Seed Initial Admin User (admin / admin1234)
 INSERT INTO "User" ("username", "name", "email", "password", "role", "balance", "points", "updatedAt")
-VALUES ('admin', 'Admin Master', 'admin@webshop.local', '$2b$10$r24gY0PM3i4hv5aOnRPGE.Q64/UTKjSfIJku5dlpsTt.ZIg/eR7Oy', 'ADMIN', 99999, 1000, NOW())
-ON CONFLICT ("username") DO UPDATE SET "role" = 'ADMIN', "password" = '$2b$10$r24gY0PM3i4hv5aOnRPGE.Q64/UTKjSfIJku5dlpsTt.ZIg/eR7Oy', "balance" = 99999;
+VALUES ('admin', 'Admin Master', 'admin@webshop.local', '$2b$10$x7t.VlvZRb0We0HxjEVfk.sW2uY/H.a6WH0OTN7dnr/xlcR3odNXu', 'ADMIN', 99999, 1000, NOW())
+ON CONFLICT ("username") DO UPDATE SET "role" = 'ADMIN', "password" = '$2b$10$x7t.VlvZRb0We0HxjEVfk.sW2uY/H.a6WH0OTN7dnr/xlcR3odNXu', "balance" = 99999;
 
 -- Seed Initial Categories
 INSERT INTO "Category" ("id", "name", "icon", "order", "updatedAt")
