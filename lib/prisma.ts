@@ -4,11 +4,13 @@ import { Pool } from "pg"
 
 const globalForPrisma = global as unknown as { prisma_v3: PrismaClient }
 
+const SUPABASE_DB_URL = "postgres://postgres.qyqqzuzoworkectsuwan:Az14012550%23123@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
+
 const createPrismaClient = () => {
-  const connectionString = process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/postgres"
+  const connectionString = process.env.DATABASE_URL || SUPABASE_DB_URL
   const pool = new Pool({ 
     connectionString,
-    ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
+    ssl: { rejectUnauthorized: false },
   })
   const adapter = new PrismaPg(pool)
 
