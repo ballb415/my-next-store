@@ -101,3 +101,4 @@ lib/
 └── utils.ts          # Utility functions
 ```
 "# my-next-store" 
+"# my-next-store" 
