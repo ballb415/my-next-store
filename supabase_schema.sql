@@ -39,7 +39,7 @@ EXCEPTION
 END $$;
 
 -- CreateTable
-CREATE TABLE "User" (
+CREATE TABLE IF NOT EXISTS "User" (
     "id" SERIAL NOT NULL,
     "name" TEXT,
     "username" TEXT,
@@ -57,7 +57,7 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
-CREATE TABLE "Account" (
+CREATE TABLE IF NOT EXISTS "Account" (
     "id" TEXT NOT NULL,
     "userId" INTEGER NOT NULL,
     "type" TEXT NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE "Account" (
 );
 
 -- CreateTable
-CREATE TABLE "Session" (
+CREATE TABLE IF NOT EXISTS "Session" (
     "id" TEXT NOT NULL,
     "sessionToken" TEXT NOT NULL,
     "userId" INTEGER NOT NULL,
@@ -85,14 +85,14 @@ CREATE TABLE "Session" (
 );
 
 -- CreateTable
-CREATE TABLE "VerificationToken" (
+CREATE TABLE IF NOT EXISTS "VerificationToken" (
     "identifier" TEXT NOT NULL,
     "token" TEXT NOT NULL,
     "expires" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
-CREATE TABLE "TenantStore" (
+CREATE TABLE IF NOT EXISTS "TenantStore" (
     "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -118,7 +118,7 @@ CREATE TABLE "TenantStore" (
 );
 
 -- CreateTable
-CREATE TABLE "Category" (
+CREATE TABLE IF NOT EXISTS "Category" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "icon" TEXT,
@@ -131,7 +131,7 @@ CREATE TABLE "Category" (
 );
 
 -- CreateTable
-CREATE TABLE "Product" (
+CREATE TABLE IF NOT EXISTS "Product" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
@@ -153,7 +153,7 @@ CREATE TABLE "Product" (
 );
 
 -- CreateTable
-CREATE TABLE "ProductStock" (
+CREATE TABLE IF NOT EXISTS "ProductStock" (
     "id" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
     "accountEmail" TEXT NOT NULL,
@@ -168,7 +168,7 @@ CREATE TABLE "ProductStock" (
 );
 
 -- CreateTable
-CREATE TABLE "Order" (
+CREATE TABLE IF NOT EXISTS "Order" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
     "productId" TEXT NOT NULL,
@@ -190,7 +190,7 @@ CREATE TABLE "Order" (
 );
 
 -- CreateTable
-CREATE TABLE "TopupTransaction" (
+CREATE TABLE IF NOT EXISTS "TopupTransaction" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
@@ -206,7 +206,7 @@ CREATE TABLE "TopupTransaction" (
 );
 
 -- CreateTable
-CREATE TABLE "PointsHistory" (
+CREATE TABLE IF NOT EXISTS "PointsHistory" (
     "id" TEXT NOT NULL,
     "userId" INTEGER NOT NULL,
     "amount" INTEGER NOT NULL,
@@ -218,7 +218,7 @@ CREATE TABLE "PointsHistory" (
 );
 
 -- CreateTable
-CREATE TABLE "Coupon" (
+CREATE TABLE IF NOT EXISTS "Coupon" (
     "id" TEXT NOT NULL,
     "code" TEXT NOT NULL,
     "type" "CouponType" NOT NULL DEFAULT 'PERCENT',
@@ -237,7 +237,7 @@ CREATE TABLE "Coupon" (
 );
 
 -- CreateTable
-CREATE TABLE "CouponUsage" (
+CREATE TABLE IF NOT EXISTS "CouponUsage" (
     "id" TEXT NOT NULL,
     "userId" INTEGER NOT NULL,
     "couponId" TEXT NOT NULL,
@@ -248,91 +248,79 @@ CREATE TABLE "CouponUsage" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Account_provider_providerAccountId_key" ON "Account"("provider", "providerAccountId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
-
--- CreateIndex
-CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token");
-
--- CreateIndex
-CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
-
--- CreateIndex
-CREATE UNIQUE INDEX "TenantStore_slug_key" ON "TenantStore"("slug");
-
--- CreateIndex
-CREATE INDEX "TenantStore_ownerId_idx" ON "TenantStore"("ownerId");
-
--- CreateIndex
-CREATE INDEX "Category_tenantStoreId_idx" ON "Category"("tenantStoreId");
-
--- CreateIndex
-CREATE INDEX "Product_tenantStoreId_idx" ON "Product"("tenantStoreId");
-
--- CreateIndex
-CREATE INDEX "Product_categoryId_idx" ON "Product"("categoryId");
-
--- CreateIndex
-CREATE INDEX "ProductStock_productId_status_idx" ON "ProductStock"("productId", "status");
-
--- CreateIndex
-CREATE INDEX "Order_tenantStoreId_idx" ON "Order"("tenantStoreId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Coupon_code_key" ON "Coupon"("code");
-
--- CreateIndex
-CREATE UNIQUE INDEX "CouponUsage_userId_couponId_key" ON "CouponUsage"("userId", "couponId");
+CREATE UNIQUE INDEX IF NOT EXISTS "User_username_key" ON "User"("username");
+CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX IF NOT EXISTS "Account_provider_providerAccountId_key" ON "Account"("provider", "providerAccountId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Session_sessionToken_key" ON "Session"("sessionToken");
+CREATE UNIQUE INDEX IF NOT EXISTS "VerificationToken_token_key" ON "VerificationToken"("token");
+CREATE UNIQUE INDEX IF NOT EXISTS "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
+CREATE UNIQUE INDEX IF NOT EXISTS "TenantStore_slug_key" ON "TenantStore"("slug");
+CREATE INDEX IF NOT EXISTS "TenantStore_ownerId_idx" ON "TenantStore"("ownerId");
+CREATE INDEX IF NOT EXISTS "Category_tenantStoreId_idx" ON "Category"("tenantStoreId");
+CREATE INDEX IF NOT EXISTS "Product_tenantStoreId_idx" ON "Product"("tenantStoreId");
+CREATE INDEX IF NOT EXISTS "Product_categoryId_idx" ON "Product"("categoryId");
+CREATE INDEX IF NOT EXISTS "ProductStock_productId_status_idx" ON "ProductStock"("productId", "status");
+CREATE INDEX IF NOT EXISTS "Order_tenantStoreId_idx" ON "Order"("tenantStoreId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Coupon_code_key" ON "Coupon"("code");
+CREATE UNIQUE INDEX IF NOT EXISTS "CouponUsage_userId_couponId_key" ON "CouponUsage"("userId", "couponId");
 
 -- AddForeignKey
-ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- AddForeignKey
-ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- AddForeignKey
-ALTER TABLE "TenantStore" ADD CONSTRAINT "TenantStore_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "TenantStore" ADD CONSTRAINT "TenantStore_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- AddForeignKey
-ALTER TABLE "Category" ADD CONSTRAINT "Category_tenantStoreId_fkey" FOREIGN KEY ("tenantStoreId") REFERENCES "TenantStore"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Category" ADD CONSTRAINT "Category_tenantStoreId_fkey" FOREIGN KEY ("tenantStoreId") REFERENCES "TenantStore"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_tenantStoreId_fkey" FOREIGN KEY ("tenantStoreId") REFERENCES "TenantStore"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Product" ADD CONSTRAINT "Product_tenantStoreId_fkey" FOREIGN KEY ("tenantStoreId") REFERENCES "TenantStore"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- AddForeignKey
-ALTER TABLE "ProductStock" ADD CONSTRAINT "ProductStock_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "ProductStock" ADD CONSTRAINT "ProductStock_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- AddForeignKey
-ALTER TABLE "ProductStock" ADD CONSTRAINT "ProductStock_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "ProductStock" ADD CONSTRAINT "ProductStock_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- AddForeignKey
-ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- AddForeignKey
-ALTER TABLE "Order" ADD CONSTRAINT "Order_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Order" ADD CONSTRAINT "Order_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- AddForeignKey
-ALTER TABLE "Order" ADD CONSTRAINT "Order_tenantStoreId_fkey" FOREIGN KEY ("tenantStoreId") REFERENCES "TenantStore"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "Order" ADD CONSTRAINT "Order_tenantStoreId_fkey" FOREIGN KEY ("tenantStoreId") REFERENCES "TenantStore"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- AddForeignKey
-ALTER TABLE "TopupTransaction" ADD CONSTRAINT "TopupTransaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "TopupTransaction" ADD CONSTRAINT "TopupTransaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- AddForeignKey
-ALTER TABLE "PointsHistory" ADD CONSTRAINT "PointsHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "PointsHistory" ADD CONSTRAINT "PointsHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- AddForeignKey
-ALTER TABLE "CouponUsage" ADD CONSTRAINT "CouponUsage_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "CouponUsage" ADD CONSTRAINT "CouponUsage_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- AddForeignKey
-ALTER TABLE "CouponUsage" ADD CONSTRAINT "CouponUsage_couponId_fkey" FOREIGN KEY ("couponId") REFERENCES "Coupon"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+    ALTER TABLE "CouponUsage" ADD CONSTRAINT "CouponUsage_couponId_fkey" FOREIGN KEY ("couponId") REFERENCES "Coupon"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN null; END $$;
