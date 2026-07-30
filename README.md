@@ -100,3 +100,4 @@ lib/
 ├── store.ts          # Zustand store
 └── utils.ts          # Utility functions
 ```
+"# my-next-store" 
