@@ -1159,107 +1159,19 @@ export default function TenantDashboardPage({ params }: { params: Promise<{ stor
 
       {/* Edit Product Modal */}
       {showEditModal && editingProduct && (
-        <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="w-full max-w-md my-auto rounded-3xl bg-white p-6 sm:p-7 space-y-5 shadow-2xl border border-sky-100 max-h-[90vh] overflow-y-auto relative animate-fade-in-up">
-            <div className="flex items-center justify-between border-b border-sky-100 pb-3">
-              <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                <Pencil className="h-5 w-5 text-amber-500" />
-                แก้ไขสินค้า
-              </h3>
-              <button 
-                type="button" 
-                onClick={() => { setShowEditModal(false); setEditingProduct(null) }}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveEdit} className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-slate-700">ชื่อสินค้า</label>
-                <input
-                  type="text"
-                  value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-sky-100 bg-slate-50 px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-sky-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-700">ราคา (บาท)</label>
-                <input
-                  type="number"
-                  value={editForm.price}
-                  onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-sky-100 bg-slate-50 px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-sky-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-700">คำอธิบายสินค้า</label>
-                <textarea
-                  rows={2}
-                  value={editForm.description}
-                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-sky-100 bg-slate-50 px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-sky-500 resize-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-700">ลิงก์รูปภาพสินค้า</label>
-                <input
-                  type="text"
-                  placeholder="https://..."
-                  value={editForm.image}
-                  onChange={(e) => setEditForm({ ...editForm, image: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-sky-100 bg-slate-50 px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-sky-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                  📥 ลิงก์ดาวน์โหลดสินค้า (ถ้ามี)
-                </label>
-                <input
-                  type="text"
-                  placeholder="https://drive.google.com/... หรือ https://mega.nz/..."
-                  value={editForm.downloadUrl}
-                  onChange={(e) => setEditForm({ ...editForm, downloadUrl: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-sky-100 bg-slate-50 px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-sky-500"
-                />
-              </div>
-
-              <div className="flex items-center gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => { setShowEditModal(false); setEditingProduct(null) }}
-                  className="w-1/3 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold text-sm hover:bg-slate-200"
-                >
-                  ยกเลิก
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowEditModal(false)
-                    setDeletingProduct(editingProduct)
-                    setShowDeleteConfirm(true)
-                  }}
-                  className="w-1/3 py-3 rounded-xl bg-red-50 text-red-500 font-bold text-sm hover:bg-red-100 border border-red-100 flex items-center justify-center gap-1"
-                >
-                  <Trash2 className="h-3.5 w-3.5" /> ลบ
-                </button>
-                <button
-                  type="submit"
-                  disabled={savingEdit}
-                  className="w-1/3 blue-gradient-btn py-3 rounded-xl font-bold text-sm shadow-md"
-                >
-                  {savingEdit ? "กำลังบันทึก..." : "บันทึก"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <EditProductModal
+          editingProduct={editingProduct}
+          editForm={editForm}
+          setEditForm={setEditForm}
+          savingEdit={savingEdit}
+          handleSaveEdit={handleSaveEdit}
+          onClose={() => { setShowEditModal(false); setEditingProduct(null) }}
+          onDelete={() => {
+            setShowEditModal(false)
+            setDeletingProduct(editingProduct)
+            setShowDeleteConfirm(true)
+          }}
+        />
       )}
 
       {/* Delete Confirmation Modal */}
@@ -1300,5 +1212,372 @@ export default function TenantDashboardPage({ params }: { params: Promise<{ stor
         </div>
       )}
     </>
+  )
+}
+
+// ============================================================
+// Edit Product Modal with Stock Management
+// ============================================================
+interface StockItem {
+  id: string
+  accountEmail: string
+  accountPass: string
+  accountData?: string | null
+  status: string
+  createdAt: string
+  order?: { id: number; userId: number; createdAt: string } | null
+}
+
+function EditProductModal({
+  editingProduct,
+  editForm,
+  setEditForm,
+  savingEdit,
+  handleSaveEdit,
+  onClose,
+  onDelete,
+}: {
+  editingProduct: Product
+  editForm: { name: string; price: string; description: string; image: string; downloadUrl: string }
+  setEditForm: (form: any) => void
+  savingEdit: boolean
+  handleSaveEdit: (e: React.FormEvent) => void
+  onClose: () => void
+  onDelete: () => void
+}) {
+  const [activeTab, setActiveTab] = useState<"info" | "stock">("info")
+  const [stockItems, setStockItems] = useState<StockItem[]>([])
+  const [loadingStock, setLoadingStock] = useState(false)
+  const [stockInput, setStockInput] = useState("")
+  const [savingStock, setSavingStock] = useState(false)
+  const [deletingStockId, setDeletingStockId] = useState<string | null>(null)
+
+  // Fetch stock items when switching to stock tab
+  const fetchStock = useCallback(async () => {
+    setLoadingStock(true)
+    try {
+      const res = await fetch(`/api/admin/products/${editingProduct.id}/stock`)
+      if (res.ok) {
+        const data = await res.json()
+        setStockItems(data)
+      }
+    } catch (err) {
+      console.error("Fetch stock error:", err)
+    } finally {
+      setLoadingStock(false)
+    }
+  }, [editingProduct.id])
+
+  useEffect(() => {
+    if (activeTab === "stock") {
+      fetchStock()
+    }
+  }, [activeTab, fetchStock])
+
+  // Add stock items (bulk: email:password or email:password:data per line)
+  const handleAddStock = async () => {
+    if (!stockInput.trim()) return
+    setSavingStock(true)
+    try {
+      const lines = stockInput.trim().split("\n").filter(Boolean)
+      const items = lines.map((line) => {
+        const parts = line.split(":")
+        return {
+          email: parts[0]?.trim() || "",
+          password: parts[1]?.trim() || "",
+          data: parts.slice(2).join(":").trim() || undefined,
+        }
+      }).filter(item => item.email && item.password)
+
+      if (items.length === 0) return
+
+      const res = await fetch(`/api/admin/products/${editingProduct.id}/stock`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }),
+      })
+
+      if (res.ok) {
+        setStockInput("")
+        fetchStock()
+      }
+    } catch (err) {
+      console.error("Add stock error:", err)
+    } finally {
+      setSavingStock(false)
+    }
+  }
+
+  // Delete a stock item
+  const handleDeleteStock = async (stockId: string) => {
+    setDeletingStockId(stockId)
+    try {
+      const res = await fetch(`/api/admin/products/${editingProduct.id}/stock?stockId=${stockId}`, {
+        method: "DELETE",
+      })
+      if (res.ok) {
+        setStockItems((prev) => prev.filter((s) => s.id !== stockId))
+      }
+    } catch (err) {
+      console.error("Delete stock error:", err)
+    } finally {
+      setDeletingStockId(null)
+    }
+  }
+
+  const availableCount = stockItems.filter(s => s.status === "AVAILABLE").length
+  const soldCount = stockItems.filter(s => s.status === "SOLD").length
+
+  return (
+    <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+      <div className="w-full max-w-lg my-auto rounded-3xl bg-white p-6 sm:p-7 space-y-4 shadow-2xl border border-sky-100 max-h-[90vh] overflow-y-auto relative animate-fade-in-up">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-sky-100 pb-3">
+          <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+            <Pencil className="h-5 w-5 text-amber-500" />
+            แก้ไขสินค้า
+          </h3>
+          <button 
+            type="button" 
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 bg-slate-100 p-1 rounded-xl">
+          <button
+            type="button"
+            onClick={() => setActiveTab("info")}
+            className={cn(
+              "flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+              activeTab === "info" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            )}
+          >
+            <Package className="h-3.5 w-3.5" /> ข้อมูลสินค้า
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("stock")}
+            className={cn(
+              "flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+              activeTab === "stock" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            )}
+          >
+            <Boxes className="h-3.5 w-3.5" /> สต็อก
+            {stockItems.length > 0 && (
+              <span className="ml-0.5 inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">
+                {availableCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Tab: Product Info */}
+        {activeTab === "info" && (
+          <form onSubmit={handleSaveEdit} className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-slate-700">ชื่อสินค้า</label>
+              <input
+                type="text"
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-sky-100 bg-slate-50 px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-sky-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700">ราคา (บาท)</label>
+              <input
+                type="number"
+                value={editForm.price}
+                onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-sky-100 bg-slate-50 px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-sky-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700">คำอธิบายสินค้า</label>
+              <textarea
+                rows={2}
+                value={editForm.description}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-sky-100 bg-slate-50 px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-sky-500 resize-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700">ลิงก์รูปภาพสินค้า</label>
+              <input
+                type="text"
+                placeholder="https://..."
+                value={editForm.image}
+                onChange={(e) => setEditForm({ ...editForm, image: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-sky-100 bg-slate-50 px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-sky-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                📥 ลิงก์ดาวน์โหลดสินค้า (ถ้ามี)
+              </label>
+              <input
+                type="text"
+                placeholder="https://drive.google.com/... หรือ https://mega.nz/..."
+                value={editForm.downloadUrl}
+                onChange={(e) => setEditForm({ ...editForm, downloadUrl: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-sky-100 bg-slate-50 px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-sky-500"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-1/3 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold text-sm hover:bg-slate-200"
+              >
+                ยกเลิก
+              </button>
+              <button
+                type="button"
+                onClick={onDelete}
+                className="w-1/3 py-3 rounded-xl bg-red-50 text-red-500 font-bold text-sm hover:bg-red-100 border border-red-100 flex items-center justify-center gap-1"
+              >
+                <Trash2 className="h-3.5 w-3.5" /> ลบ
+              </button>
+              <button
+                type="submit"
+                disabled={savingEdit}
+                className="w-1/3 blue-gradient-btn py-3 rounded-xl font-bold text-sm shadow-md"
+              >
+                {savingEdit ? "กำลังบันทึก..." : "บันทึก"}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Tab: Stock Management */}
+        {activeTab === "stock" && (
+          <div className="space-y-4">
+            {/* Stock Stats */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-sky-50 rounded-xl p-3 text-center border border-sky-100">
+                <div className="text-lg font-black text-sky-700">{stockItems.length}</div>
+                <div className="text-[10px] font-bold text-sky-600 uppercase">ทั้งหมด</div>
+              </div>
+              <div className="bg-emerald-50 rounded-xl p-3 text-center border border-emerald-100">
+                <div className="text-lg font-black text-emerald-700">{availableCount}</div>
+                <div className="text-[10px] font-bold text-emerald-600 uppercase">พร้อมขาย</div>
+              </div>
+              <div className="bg-amber-50 rounded-xl p-3 text-center border border-amber-100">
+                <div className="text-lg font-black text-amber-700">{soldCount}</div>
+                <div className="text-[10px] font-bold text-amber-600 uppercase">ขายแล้ว</div>
+              </div>
+            </div>
+
+            {/* Add Stock Input */}
+            <div className="space-y-2 p-4 bg-gradient-to-br from-sky-50 to-blue-50 rounded-2xl border border-sky-200/60">
+              <label className="text-xs font-bold text-sky-800 flex items-center gap-1.5">
+                <Plus className="h-3.5 w-3.5" /> เพิ่มสต็อกสินค้า
+              </label>
+              <p className="text-[10px] text-sky-600 font-medium">
+                กรอก 1 บรรทัดต่อ 1 สต็อก ในรูปแบบ: <strong>อีเมล:รหัสผ่าน:ข้อมูลเพิ่มเติม</strong>
+              </p>
+              <textarea
+                rows={4}
+                placeholder={"user@example.com:password123\nuser2@example.com:pass456:หมายเหตุ"}
+                value={stockInput}
+                onChange={(e) => setStockInput(e.target.value)}
+                className="w-full rounded-xl border border-sky-200 bg-white px-3.5 py-2.5 text-xs font-mono outline-none focus:border-sky-500 resize-none placeholder:text-sky-300"
+              />
+              <button
+                type="button"
+                onClick={handleAddStock}
+                disabled={savingStock || !stockInput.trim()}
+                className="w-full py-2.5 rounded-xl blue-gradient-btn font-bold text-xs shadow-md disabled:opacity-50 flex items-center justify-center gap-1.5"
+              >
+                {savingStock ? (
+                  "กำลังเพิ่ม..."
+                ) : (
+                  <>
+                    <Plus className="h-3.5 w-3.5" />
+                    เพิ่มสต็อก ({stockInput.trim().split("\n").filter(Boolean).length} รายการ)
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Stock List */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <Boxes className="h-3.5 w-3.5 text-sky-600" />
+                สต็อกทั้งหมด ({stockItems.length})
+              </h4>
+
+              {loadingStock ? (
+                <div className="text-center py-6 text-slate-400 text-xs">กำลังโหลด...</div>
+              ) : stockItems.length === 0 ? (
+                <div className="text-center py-6 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                  <Boxes className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                  <p className="text-xs text-slate-400 font-semibold">ยังไม่มีสต็อกสินค้า</p>
+                  <p className="text-[10px] text-slate-400">เพิ่มสต็อกด้านบนเพื่อเริ่มขาย</p>
+                </div>
+              ) : (
+                <div className="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+                  {stockItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className={cn(
+                        "flex items-center justify-between gap-2 p-2.5 rounded-xl border text-xs",
+                        item.status === "AVAILABLE" 
+                          ? "bg-emerald-50/50 border-emerald-100" 
+                          : "bg-amber-50/50 border-amber-100 opacity-70"
+                      )}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-slate-800 truncate">{item.accountEmail}</div>
+                        <div className="text-slate-500 font-mono text-[10px] truncate">
+                          {item.accountPass}
+                          {item.accountData && <span className="ml-1 text-sky-600">• {item.accountData}</span>}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className={cn(
+                          "px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase",
+                          item.status === "AVAILABLE" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+                        )}>
+                          {item.status === "AVAILABLE" ? "พร้อมขาย" : "ขายแล้ว"}
+                        </span>
+                        {item.status === "AVAILABLE" && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteStock(item.id)}
+                            disabled={deletingStockId === item.id}
+                            className="p-1 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full py-3 rounded-xl bg-slate-100 text-slate-600 font-bold text-sm hover:bg-slate-200"
+            >
+              ปิด
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
